@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ALCS Countdown</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url('alcs-campus.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.7);
+    }
+
+    .countdown-box {
+      font-size: 1.6em;
+      margin: 20px auto;
+      padding: 15px;
+      width: 90%;
+      max-width: 600px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+
+<h1>ALCS School Countdown</h1>
+
+<div class="countdown-box" id="thanksgiving"></div>
+<div class="countdown-box" id="christmas"></div>
+<div class="countdown-box" id="easter"></div>
+<div class="countdown-box" id="lastday"></div>
+
+<script>
+  const countdowns = [
+    {
+      label: "Thanksgiving Break",
+      target: new Date("2025-11-21T13:00:00"),
+      elementId: "thanksgiving"
+    },
+    {
+      label: "Christmas Break",
+      target: new Date("2025-12-13T13:00:00"),
+      elementId: "christmas"
+    },
+    {
+      label: "Easter Break",
+      target: new Date("2026-03-27T15:30:00"),
+      elementId: "easter"
+    },
+    {
+      label: "Last Day of School",
+      target: new Date("2026-05-21T13:00:00"),
+      elementId: "lastday"
+    }
+  ];
+
+  function isWeekend(date) {
+    const day = date.getDay();
+    return day === 0 || day === 6;
+  }
+
+  function getRemainingSchoolTime(now, target) {
+    if (now >= target) return 0;
+
+    let ms = 0;
+    let temp = new Date(now);
+
+    while (temp < target) {
+      if (!isWeekend(temp)) {
+        const startOfDay = new Date(temp);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(temp);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        if (temp.toDateString() === now.toDateString()) {
+          ms += endOfDay - now;
+        } else {
+          ms += endOfDay - startOfDay;
+        }
+      }
+      temp.setDate(temp.getDate() + 1);
+      temp.setHours(0, 0, 0, 0);
+    }
+
+    const finalCheck = new Date(target);
+    if (!isWeekend(finalCheck)) {
+      const msToTarget = Math.max(0, target - now);
+      return Math.min(ms, msToTarget);
+    }
+
+    return ms;
+  }
+
+  function formatTime(ms) {
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${days} school days ${hours}h ${minutes}m ${seconds}s remaining`;
+  }
+
+  function updateCountdowns() {
+    const now = new Date();
+    for (let item of countdowns) {
+      const remaining = getRemainingSchoolTime(now, item.target);
+      const el = document.getElementById(item.elementId);
+      if (remaining <= 0) {
+        el.textContent = `🎉 ${item.label} has started!`;
+      } else {
+        el.textContent = `${item.label}: ${formatTime(remaining)}`;
+      }
+    }
+  }
+
+  setInterval(updateCountdowns, 1000);
+</script>
+
+</body>
+</html>
