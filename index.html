@@ -42,11 +42,15 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
   </style>
-</head>
-<body>
+
+    <audio id="alertSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+    </head>
+
+<body onload="enterFullscreen()">
 
 <h1>ALCS School Countdown</h1>
 
+<div class="countdown-box" id="firstday"></div>
 <div class="countdown-box" id="thanksgiving"></div>
 <div class="countdown-box" id="christmas"></div>
 <div class="countdown-box" id="easter"></div>
@@ -54,6 +58,13 @@
 
 <script>
   const countdowns = [
+
+    {
+      label: "First Day of School",
+      target: new Date("2025-08-07T08:00:00"),
+      elementId: "firstday"
+    },
+
     {
       label: "Thanksgiving Break",
       target: new Date("2025-11-21T13:00:00"),
@@ -135,7 +146,39 @@
     }
   }
 
-  setInterval(updateCountdowns, 1000);
+  
+  function enterFullscreen() {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+  }
+
+  const alertAudio = document.getElementById('alertSound');
+  const warned = new Set();
+
+  function updateCountdowns() {
+    const now = new Date();
+    for (let item of countdowns) {
+      const remaining = getRemainingSchoolTime(now, item.target);
+      const el = document.getElementById(item.elementId);
+      if (remaining <= 0) {
+        el.textContent = `🎉 ${item.label} has started!`;
+        el.style.backgroundColor = "rgba(0,128,0,0.6)";
+        el.style.color = "#fff";
+      } else {
+        el.textContent = `${item.label}: ${formatTime(remaining)}`;
+        const daysLeft = Math.floor(remaining / (1000 * 60 * 60 * 24));
+        if (daysLeft <= 5 && !warned.has(item.elementId)) {
+          el.style.border = "3px solid red";
+          el.style.boxShadow = "0 0 20px red";
+          alertAudio.play().catch(()=>{});
+          warned.add(item.elementId);
+        }
+      }
+    }
+  }
+
+setInterval(updateCountdowns, 1000);
 </script>
 
 </body>
